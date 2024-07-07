@@ -26,6 +26,25 @@ def tab_worker(task_id, page):
 
 def get_session():
     co = ChromiumOptions()
+    arguments = [
+            "-no-first-run",
+            "-force-color-profile=srgb",
+            "-metrics-recording-only",
+            # "-password-store=basic",
+            "-use-mock-keychain",
+            "-export-tagged-pdf",
+            "-no-default-browser-check",
+            "-disable-background-mode",
+            "-enable-features=NetworkService,NetworkServiceInProcess,LoadCryptoTokenExtension,PermuteTLSExtensions",
+            "-disable-features=FlashDeprecationWarning,EnablePasswordsAccountStorage",
+            "-deny-permission-prompts",
+            "-disable-gpu"
+            # "-headless=new"
+            # "-incognito"
+        ]
+    for argument in arguments:
+        co.set_argument(argument)
+    
     co.auto_port()
     co.headless(False)
     browser_path = r"C:\Users\Administrator\AppData\Local\ms-playwright\chromium-1124\chrome-win\chrome.exe"
