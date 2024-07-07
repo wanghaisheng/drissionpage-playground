@@ -1,35 +1,28 @@
-import asyncio
-import time
 import threading
+import time
 from queue import Queue
 from DrissionPage import ChromiumOptions, WebPage
 
 # Semaphore to limit concurrency
-semaphore = threading.Semaphore(10)  # Allow up to 5 concurrent tasks
+semaphore = threading.Semaphore(5)  # Allow up to 5 concurrent tasks
 
-class TabWorker(threading.Thread):
-    def __init__(self, task_id, page):
-        super().__init__()
-        self.task_id = task_id
-        self.page = page
+def tab_worker(task_id, page):
+    with semaphore:
+        print(f"Task {task_id} started")
 
-    def run(self):
-        with semaphore:
-            print(f"Task {self.task_id} started")
+        # Perform some work synchronously (simulated with sleep)
+        time.sleep(1)
 
-            # Perform some work synchronously (simulated with sleep)
-            time.sleep(1)
+        # Create a new tab and perform actions
+        tab = page.new_tab()
+        tab.get('https://baidu.com')  # Replace with your actual synchronous method
+        title = tab.title  # Replace with your actual synchronous method
+        print(f"Page title: {title}")
 
-            # Create a new tab and perform actions
-            tab = self.page.new_tab()
-            tab.get('https://baidu.com')  # Replace with your actual synchronous method
-            title = tab.title  # Replace with your actual synchronous method
-            print(f"Page title: {title}")
+        # Close the tab
+        tab.close()
 
-            # Close the tab
-            tab.close()
-
-            print(f"Task {self.task_id} completed")
+        print(f"Task {task_id} completed")
 
 def get_session():
     co = ChromiumOptions()
@@ -47,9 +40,9 @@ def run_tasks():
     # Create threads for each task
     threads = []
     for i in range(1, 10):
-        worker = TabWorker(i, page)
-        threads.append(worker)
-        worker.start()
+        thread = threading.Thread(target=tab_worker, args=(i, page))
+        threads.append(thread)
+        thread.start()
 
     # Wait for all threads to complete
     for thread in threads:
